@@ -1,0 +1,63 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Список заказов{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Заказы</h2>
+    {% if user_role != 'guest' %}
+        <a href="{% url 'orders:order_create' %}" class="btn btn-success">
+            <i class="bi bi-plus-lg"></i> Создать заказ
+        </a>
+    {% endif %}
+</div>
+
+{% if orders %}
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Номер</th>
+                    <th>Дата</th>
+                    {% if user_role == 'admin' or user_role == 'manager' %}
+                        <th>Покупатель</th>
+                    {% endif %}
+                    <th>Статус</th>
+                    <th>Пункт выдачи</th>
+                    <th>Сумма</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                    <tr>
+                        <td>{{ order.order_number }}</td>
+                        <td>{{ order.order_date|date:"d.m.Y H:i" }}</td>
+                        {% if user_role == 'admin' or user_role == 'manager' %}
+                            <td>{{ order.customer.get_full_name|default:order.customer.username }}</td>
+                        {% endif %}
+                        <td>{{ order.status }}</td>
+                        <td>{{ order.pickup_point }}</td>
+                        <td>{{ order.total_price }} ₽</td>
+                        <td>
+                            <a href="{% url 'orders:order_detail' order.pk %}" class="btn btn-sm btn-info">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            {% if user_role == 'admin' or user_role == 'manager' %}
+                                <a href="{% url 'orders:order_update' order.pk %}" class="btn btn-sm btn-warning">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{% url 'orders:order_delete' order.pk %}" class="btn btn-sm btn-danger">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="alert alert-info">Заказов нет.</div>
+{% endif %}
+{% endblock %}

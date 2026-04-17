@@ -1,0 +1,57 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Заказ #{{ order.order_number }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Заказ #{{ order.order_number }}</h2>
+    <a href="{% url 'orders:order_list' %}" class="btn btn-secondary">Назад</a>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <p><strong>Дата заказа:</strong> {{ order.order_date|date:"d.m.Y H:i" }}</p>
+        <p><strong>Покупатель:</strong> {{ order.customer.get_full_name|default:order.customer.username }}</p>
+        <p><strong>Статус:</strong> {{ order.status }}</p>
+        <p><strong>Пункт выдачи:</strong> {{ order.pickup_point }}</p>
+        {% if order.delivery_date %}
+            <p><strong>Дата доставки:</strong> {{ order.delivery_date|date:"d.m.Y H:i" }}</p>
+        {% endif %}
+    </div>
+</div>
+
+<h4>Позиции заказа</h4>
+<table class="table table-bordered">
+    <thead class="table-secondary">
+        <tr>
+            <th>Товар</th>
+            <th>Кол-во</th>
+            <th>Цена</th>
+            <th>Сумма</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in order.items.all %}
+            <tr>
+                <td>{{ item.product.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.price }} ₽</td>
+                <td>{{ item.price|floatformat:2 }} ₽</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="4">Нет позиций.</td></tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="3"><strong>Итого:</strong></td>
+            <td><strong>{{ order.total_price }} ₽</strong></td>
+        </tr>
+    </tfoot>
+</table>
+
+{% if user_role == 'admin' or user_role == 'manager' %}
+    <a href="{% url 'orders:order_update' order.pk %}" class="btn btn-warning">Редактировать</a>
+    <a href="{% url 'orders:order_delete' order.pk %}" class="btn btn-danger">Удалить</a>
+{% endif %}
+{% endblock %}
